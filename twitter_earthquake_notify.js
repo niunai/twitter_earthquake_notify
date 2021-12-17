@@ -48,6 +48,10 @@ makeMsg = (username, text) => {
   if (username === "earthquake_jp") {
     const out_text = text.split("　");
 
+    if (out_text[0].match(/速報/)) {
+      return null;
+    }
+
     const shingenchi = out_text[2].split("（")[0];
     const shindoText = out_text[3].split("（")[0];
     const shindo = shindoText.match(/(?<digit>\d+)/).groups.digit;
@@ -118,19 +122,19 @@ fetchData = async () => {
   });
 
   stream.on(ETwitterStreamEvent.Error, async (error) => {
-    console.log(`Twitter Event:Error: ${JSON.stringify(error)}`);
+    console.error(`Twitter Event:Error: ${error.message}`);
   });
   stream.on(ETwitterStreamEvent.ReconnectAttempt, async () => {
-    console.log(`Twitter Event:ReconnectAttempt`);
+    console.error(`Twitter Event:ReconnectAttempt`);
   });
   stream.on(ETwitterStreamEvent.Reconnected, async () => {
-    console.log(`Twitter Event:Reconnected`);
+    console.error(`Twitter Event:Reconnected`);
   });
   // stream.on(ETwitterStreamEvent.DataKeepAlive, async () => {
-  //   console.log(`Twitter Event:DataKeepAlive`);
+  //   console.error(`Twitter Event:DataKeepAlive`);
   // });
   stream.on(ETwitterStreamEvent.Connected, async () => {
-    console.log("Connected to the Twitter stream");
+    console.error("Connected to the Twitter stream");
   });
 };
 
