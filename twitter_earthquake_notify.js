@@ -1,9 +1,8 @@
 const { ETwitterStreamEvent, TwitterApi } = require("twitter-api-v2");
 const needle = require("needle");
 const player = require("play-sound")();
+const { makeNotifyMsg } = require("./util");
 require("dotenv").config();
-
-const MIN_SHINDO = 3;
 
 if (typeof process.env.TWITTER_BEARER_TOKEN == "undefined") {
   console.error('Error: "TWITTER_BEARER_TOKEN" is not set.');
@@ -22,49 +21,6 @@ if (typeof process.env.BEEP_SOUND_FILE == "undefined") {
 
 const twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 const client = twitterClient.readOnly;
-
-toHalfWidth = (value) => {
-  if (!value) return value;
-  return String(value).replace(/[！-～]/g, function (all) {
-    return String.fromCharCode(all.charCodeAt(0) - 0xfee0);
-  });
-};
-
-makeMsg = (username, text) => {
-  if (username === "yurekuru") {
-    const out_text = text.split(" ");
-
-    const shingenchi = out_text[3].split("：")[1];
-    const shindoText = out_text[10].split("：")[1];
-    const shindo = toHalfWidth(shindoText).match(/(?<digit>\d+)/).groups.digit;
-
-    if (MIN_SHINDO <= shindo) {
-      return `地震です。震度${shindo}、${shingenchi}`;
-    } else {
-      return null;
-    }
-  }
-
-  if (username === "earthquake_jp") {
-    const out_text = text.split("　");
-
-    if (out_text[0].match(/速報/)) {
-      return null;
-    }
-
-    const shingenchi = out_text[2].split("（")[0];
-    const shindoText = out_text[3].split("（")[0];
-    const shindo = shindoText.match(/(?<digit>\d+)/).groups.digit;
-
-    if (MIN_SHINDO <= shindo) {
-      return `地震です。震度${shindo}、${shingenchi}`;
-    } else {
-      return null;
-    }
-  }
-
-  return null;
-};
 
 gh_notify = (msg) => {
   const data = {
@@ -111,7 +67,7 @@ fetchData = async () => {
     console.log(`===`);
     console.log(username, text);
 
-    const msg = makeMsg(username, text);
+    const msg = makeNotifyMsg(username, text);
     if (msg) {
       gh_notify(msg);
       console.log("gh_notify: ", msg);
